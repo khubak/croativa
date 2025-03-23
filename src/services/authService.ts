@@ -1,5 +1,5 @@
 import * as SecureStore from 'expo-secure-store'
-import { api } from '@/services/apiService'
+import { api } from '@/services/api'
 import { API } from '@/enums/apiKeys'
 import { AuthResponse, LoginData, RegisterData } from '@/dto/auth'
 import { User } from '@/dto/user'
