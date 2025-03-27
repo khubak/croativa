@@ -1,15 +1,16 @@
 import axios from 'axios'
 import { StatusBar } from 'expo-status-bar'
-import { useState } from 'react'
-import { View, Text, TextInput, TouchableOpacity, ActivityIndicator } from 'react-native'
+import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, Keyboard } from 'react-native'
+import { useState, useRef } from 'react'
 import { login, register } from '@/services/authService'
 import { LoginData, RegisterData } from '@/dto/auth'
+import { cn } from '@/lib/utils'
 
 interface AuthFormProps {
-  onAuthSuccess: () => void
+  handleAuth: () => void
 }
 
-export const AuthForm: React.FC<AuthFormProps> = ({ onAuthSuccess }) => {
+export const AuthForm: React.FC<AuthFormProps> = ({ handleAuth }) => {
   const [isLogin, setIsLogin] = useState(true)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -19,8 +20,25 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onAuthSuccess }) => {
   const [error, setError] = useState<string | null>(null)
   const [emailError, setEmailError] = useState<string | null>(null)
   const [passwordError, setPasswordError] = useState<string | null>(null)
+  const emailInputRef = useRef<TextInput>(null)
+  const passwordInputRef = useRef<TextInput>(null)
+  const firstNameInputRef = useRef<TextInput>(null)
+  const lastNameInputRef = useRef<TextInput>(null)
+
+  const isFormEmpty = () => {
+    if (isLogin) {
+      return !email && !password
+    } else {
+      return !email && !password && !firstName && !lastName
+    }
+  }
 
   const validateEmail = (email: string): boolean => {
+    if (isFormEmpty()) {
+      setEmailError(null)
+      return true
+    }
+
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     const isValid = emailRegex.test(email)
 
@@ -34,6 +52,16 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onAuthSuccess }) => {
   }
 
   const validatePassword = (password: string): boolean => {
+    if (isLogin) {
+      setPasswordError(null)
+      return true
+    }
+
+    if (isFormEmpty()) {
+      setPasswordError(null)
+      return true
+    }
+
     const isValid = password.length >= 8
 
     if (!isValid) {
@@ -46,6 +74,12 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onAuthSuccess }) => {
   }
 
   const toggleForm = () => {
+    Keyboard.dismiss()
+    emailInputRef.current?.blur()
+    passwordInputRef.current?.blur()
+    firstNameInputRef.current?.blur()
+    lastNameInputRef.current?.blur()
+
     setIsLogin(!isLogin)
     setEmail('')
     setPassword('')
@@ -59,6 +93,11 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onAuthSuccess }) => {
   const handleSubmit = async () => {
     setLoading(true)
     setError(null)
+
+    if (isFormEmpty()) {
+      setLoading(false)
+      return
+    }
 
     const isEmailValid = validateEmail(email)
     const isPasswordValid = validatePassword(password)
@@ -76,7 +115,7 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onAuthSuccess }) => {
         const registerData: RegisterData = { email, password, firstName, lastName }
         await register(registerData)
       }
-      onAuthSuccess()
+      handleAuth()
     } catch (err) {
       if (axios.isAxiosError(err) && err.response?.data?.message) {
         setError(err.response.data.message)
@@ -89,14 +128,15 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onAuthSuccess }) => {
   }
 
   return (
-    <View className='flex-1 items-center justify-center p-6'>
+    <View className='items-center justify-center flex-1 p-6'>
       <StatusBar style='auto' />
       <Text className='mb-8 text-3xl font-bold'>{isLogin ? 'Login' : 'Register'}</Text>
       {error && <Text className='mb-4 text-center text-red-500'>{error}</Text>}
       {!isLogin && (
         <>
           <TextInput
-            className='mb-4 w-full rounded-md bg-gray-100 px-4 py-2'
+            ref={firstNameInputRef}
+            className='w-full px-4 py-2 mb-4 bg-gray-100 rounded-md'
             placeholder='First Name'
             value={firstName}
             onChangeText={setFirstName}
@@ -105,7 +145,8 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onAuthSuccess }) => {
             autoCapitalize='words'
           />
           <TextInput
-            className='mb-4 w-full rounded-md bg-gray-100 px-4 py-2'
+            ref={lastNameInputRef}
+            className='w-full px-4 py-2 mb-4 bg-gray-100 rounded-md'
             placeholder='Last Name'
             value={lastName}
             onChangeText={setLastName}
@@ -116,37 +157,51 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onAuthSuccess }) => {
         </>
       )}
       <TextInput
-        className={`mb-4 w-full rounded-md bg-gray-100 px-4 py-2 ${emailError ? 'border border-red-500' : ''}`}
+        ref={emailInputRef}
+        className={cn('mb-4 w-full rounded-md bg-gray-100 px-4 py-2', emailError && 'border border-red-500')}
         placeholder='Email'
         value={email}
         onChangeText={(text) => {
           setEmail(text)
-          if (emailError) validateEmail(text)
+          if (emailError && !isFormEmpty()) {
+            validateEmail(text)
+          }
         }}
-        onBlur={() => validateEmail(email)}
+        onBlur={() => {
+          if (!isFormEmpty()) {
+            validateEmail(email)
+          }
+        }}
         autoCapitalize='none'
         autoCorrect={false}
         autoComplete='email'
         keyboardType='email-address'
       />
-      {emailError && <Text className='mb-2 self-start text-sm text-red-500'>{emailError}</Text>}
+      {emailError && <Text className='self-start mb-2 text-sm text-red-500'>{emailError}</Text>}
       <TextInput
-        className={`mb-4 w-full rounded-md bg-gray-100 px-4 py-2 ${passwordError ? 'border border-red-500' : ''}`}
+        ref={passwordInputRef}
+        className={cn('mb-4 w-full rounded-md bg-gray-100 px-4 py-2', passwordError && 'border border-red-500')}
         placeholder='Password'
         value={password}
         onChangeText={(text) => {
           setPassword(text)
-          if (passwordError) validatePassword(text)
+          if (passwordError && !isFormEmpty()) {
+            validatePassword(text)
+          }
         }}
-        onBlur={() => validatePassword(password)}
+        onBlur={() => {
+          if (!isFormEmpty()) {
+            validatePassword(password)
+          }
+        }}
         autoCapitalize='none'
         autoCorrect={false}
         autoComplete='password'
         secureTextEntry
       />
-      {passwordError && <Text className='mb-2 self-start text-sm text-red-500'>{passwordError}</Text>}
+      {passwordError && <Text className='self-start mb-2 text-sm text-red-500'>{passwordError}</Text>}
       <TouchableOpacity
-        className='mb-4 w-full items-center rounded-md bg-blue-500 py-3'
+        className='items-center w-full py-3 mb-4 bg-blue-500 rounded-md'
         onPress={handleSubmit}
         disabled={loading}>
         {loading ? (

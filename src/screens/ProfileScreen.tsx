@@ -3,13 +3,14 @@ import { View, Text, TouchableOpacity, ActivityIndicator } from 'react-native'
 import { AuthForm } from '@/components/profile-screen/AuthForm'
 import { getCurrentUser, logout, isAuthenticated } from '@/services/authService'
 import { User } from '@/dto/user'
+import { cn } from '@/lib/utils'
 
 export const ProfileScreen: React.FC = () => {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const [loggingOut, setLoggingOut] = useState(false)
 
-  const checkAuth = async () => {
+  const handleAuth = async () => {
     setLoading(true)
     const isAuth = await isAuthenticated()
     if (isAuth) {
@@ -22,12 +23,8 @@ export const ProfileScreen: React.FC = () => {
   }
 
   useEffect(() => {
-    checkAuth()
+    handleAuth()
   }, [])
-
-  const handleAuthSuccess = () => {
-    checkAuth()
-  }
 
   const handleLogout = async () => {
     setLoggingOut(true)
@@ -45,14 +42,17 @@ export const ProfileScreen: React.FC = () => {
   }
 
   if (!user) {
-    return <AuthForm onAuthSuccess={handleAuthSuccess} />
+    return <AuthForm handleAuth={handleAuth} />
   }
 
   return (
     <View className='flex-1 items-center justify-center p-6'>
       <Text className='mb-2 text-2xl font-semibold'>Profile</Text>
       <Text className='mb-6 text-xl'>Hello, {user.email}</Text>
-      <TouchableOpacity className='rounded-md bg-red-500 px-6 py-3' onPress={handleLogout} disabled={loggingOut}>
+      <TouchableOpacity
+        className={cn('rounded-md bg-red-500 px-6 py-3', loggingOut && 'opacity-70')}
+        onPress={handleLogout}
+        disabled={loggingOut}>
         {loggingOut ? <ActivityIndicator color='#ffffff' /> : <Text className='font-semibold text-white'>Logout</Text>}
       </TouchableOpacity>
     </View>

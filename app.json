@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "my-expo-app",
-    "slug": "croativa",
+    "slug": "rn-auth",
     "version": "1.0.0",
     "web": {
       "favicon": "./assets/favicon.png"
@@ -47,7 +47,7 @@
     },
     "extra": {
       "eas": {
-        "projectId": "eb236942-65f1-44ce-891c-aee26240b4ea"
+        "projectId": "ccb3446d-ffb3-481c-8e24-566bf081a29d"
       }
     },
     "owner": "khubak"
