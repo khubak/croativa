@@ -3,4 +3,6 @@ export const API = Object.freeze({
   AUTH: 'auth',
   LOGIN: 'login',
   REGISTER: 'register',
+  RESTAURANTS: 'restaurants',
+  SAMPLE: 'sample',
 })

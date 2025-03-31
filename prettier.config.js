@@ -5,7 +5,4 @@ module.exports = {
   singleQuote: true,
   jsxSingleQuote: true,
   printWidth: 120,
-
-  plugins: [require.resolve('prettier-plugin-tailwindcss')],
-  tailwindAttributes: ['className'],
 }

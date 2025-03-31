@@ -3,6 +3,8 @@ import { HomeScreen } from '@/screens/HomeScreen'
 import { ProfileScreen } from '@/screens/ProfileScreen'
 import Feather from '@expo/vector-icons/Feather'
 import AntDesign from '@expo/vector-icons/AntDesign'
+import MaterialIcons from '@expo/vector-icons/MaterialIcons'
+import { ExploreScreen } from '@/screens/ExploreScreen'
 
 const Tab = createBottomTabNavigator()
 
@@ -26,6 +28,13 @@ export const BottomTabs: React.FC = () => {
         component={ProfileScreen}
         options={{
           tabBarIcon: ({ color }) => <AntDesign name='user' size={24} color={color} />,
+        }}
+      />
+      <Tab.Screen
+        name='Explore'
+        component={ExploreScreen}
+        options={{
+          tabBarIcon: ({ color }) => <MaterialIcons name='explore' size={24} color={color} />,
         }}
       />
     </Tab.Navigator>

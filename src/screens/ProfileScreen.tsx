@@ -35,7 +35,7 @@ export const ProfileScreen: React.FC = () => {
 
   if (loading) {
     return (
-      <View className='flex-1 items-center justify-center'>
+      <View className='items-center justify-center flex-1'>
         <ActivityIndicator size='large' color='#0000ff' />
       </View>
     )
@@ -46,7 +46,7 @@ export const ProfileScreen: React.FC = () => {
   }
 
   return (
-    <View className='flex-1 items-center justify-center p-6'>
+    <View className='items-center justify-center flex-1 p-6'>
       <Text className='mb-2 text-2xl font-semibold'>Profile</Text>
       <Text className='mb-6 text-xl'>Hello, {user.email}</Text>
       <TouchableOpacity
