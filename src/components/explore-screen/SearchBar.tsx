@@ -45,18 +45,18 @@ export const SearchBar: React.FC<Props> = ({ value, onChangeText, onClear, place
 
   return (
     <>
-      <View className='flex-row items-center bg-gray-800 rounded-xl px-3 py-2.5'>
-        <Ionicons name='search-outline' size={20} color='#9ca3af' />
+      <View className='flex-row items-center bg-gray-300 rounded-xl px-3 py-2.5'>
+        <Ionicons name='search-outline' size={20} color='#6B7280' />
         <TextInput
-          className='flex-1 ml-2 text-base text-white'
+          className='flex-1 ml-2 text-base text-black'
           placeholder={placeholder}
-          placeholderTextColor='#9ca3af'
+          placeholderTextColor='#6B7280'
           value={inputValue}
           onChangeText={handleChangeText}
         />
         {inputValue.length > 0 && (
           <TouchableOpacity onPress={handleClear}>
-            <Ionicons name='close-circle' size={20} color='#9ca3af' />
+            <Ionicons name='close-circle' size={20} color='#6B7280' />
           </TouchableOpacity>
         )}
       </View>

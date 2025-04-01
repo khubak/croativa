@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import {
   View,
   Text,
@@ -8,8 +8,9 @@ import {
   RefreshControl,
   Image,
   ImageURISource,
+  TextInput,
 } from 'react-native'
-import { AuthForm } from '@/components/profile-screen/AuthForm'
+import { useFocusEffect } from '@react-navigation/native'
 import { getCurrentUser, isAuthenticated } from '@/services/authService'
 import { User } from '@/dto/user'
 import { Restaurant } from '@/dto/restaurant'
@@ -23,6 +24,8 @@ import { DEFAULT_PROFILE_IMAGE, NoProfilePhoto } from '@/constants/profilePhotos
 export const ExploreScreen: React.FC = () => {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
+  const [authLoading, setAuthLoading] = useState(true)
+  const [authChecked, setAuthChecked] = useState(false)
   const [restaurants, setRestaurants] = useState<Restaurant[]>([])
   const [searchQuery, setSearchQuery] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
@@ -30,39 +33,49 @@ export const ExploreScreen: React.FC = () => {
   const [isLoadingMore, setIsLoadingMore] = useState(false)
   const [refreshing, setRefreshing] = useState(false)
   const [profileImage, setProfileImage] = useState<ImageURISource>({ uri: DEFAULT_PROFILE_IMAGE })
+  const [userLocation, setUserLocation] = useState('Ilica 1, Zagreb')
+  const [isEditingLocation, setIsEditingLocation] = useState(false)
+  const isRefreshing = useRef(false)
+
+  useFocusEffect(
+    useCallback(() => {
+      if (loading) return
+
+      if (!isRefreshing.current) {
+        handleAuth()
+        loadRestaurants(1, searchQuery, true)
+      }
+    }, [searchQuery, loading])
+  )
 
   const handleAuth = async () => {
-    setLoading(true)
-    const isAuth = await isAuthenticated()
-    if (isAuth) {
-      const userData = await getCurrentUser()
-      setUser(userData)
-    } else {
+    setAuthLoading(true)
+    try {
+      const isAuth = await isAuthenticated()
+      if (isAuth) {
+        const userData = await getCurrentUser()
+        setUser(userData)
+      } else {
+        setUser(null)
+      }
+      setAuthChecked(true)
+    } catch (error) {
+      console.error('Auth error:', error)
       setUser(null)
+      setAuthChecked(true)
+    } finally {
+      setAuthLoading(false)
     }
-    setLoading(false)
   }
 
-  useEffect(() => {
-    handleAuth()
-  }, [])
-
-  useEffect(() => {
-    if (!loading && user) {
-      loadRestaurants(1, searchQuery, true)
-    }
-  }, [user, loading])
-
-  useEffect(() => {
-    if (user) {
-      loadRestaurants(1, searchQuery, true)
-    }
-  }, [searchQuery])
-
   const loadRestaurants = async (page: number, search: string, reset: boolean = false) => {
+    if (isRefreshing.current) return
+
     if (reset) {
       setIsLoadingMore(true)
     }
+
+    isRefreshing.current = true
 
     try {
       const response = await fetchRestaurants(page, search)
@@ -80,34 +93,50 @@ export const ExploreScreen: React.FC = () => {
     } finally {
       setIsLoadingMore(false)
       setRefreshing(false)
+      isRefreshing.current = false
     }
   }
 
+  useEffect(() => {
+    handleAuth()
+  }, [])
+
+  useEffect(() => {
+    if (authChecked && !authLoading) {
+      const loadInitialData = async () => {
+        await loadRestaurants(1, searchQuery, true)
+        setLoading(false)
+      }
+      loadInitialData()
+    }
+  }, [authChecked, authLoading])
+
+  useEffect(() => {
+    if (loading) return
+    loadRestaurants(1, searchQuery, true)
+  }, [searchQuery])
+
   const handleEndReached = () => {
-    if (currentPage < totalPages && !isLoadingMore) {
+    if (currentPage < totalPages && !isLoadingMore && !isRefreshing.current) {
       loadRestaurants(currentPage + 1, searchQuery)
     }
   }
 
   const handleRefresh = () => {
+    if (isRefreshing.current) return
+
     setRefreshing(true)
+    handleAuth()
     loadRestaurants(1, searchQuery, true)
   }
 
-  if (loading) {
+  if (loading || authLoading) {
     return (
       <View className='items-center justify-center flex-1 bg-black'>
         <ActivityIndicator size='large' color='#ffffff' />
       </View>
     )
   }
-
-  if (!user) {
-    return <AuthForm handleAuth={handleAuth} />
-  }
-
-  const displayName = user.email ? user.email.split('@')[0] : 'User'
-  const userLocation = 'Ilica 1, Zagreb'
 
   return (
     <LayoutBase withStatusBar className='gap-4'>
@@ -123,8 +152,31 @@ export const ExploreScreen: React.FC = () => {
             />
           </View>
           <View>
-            <Text className='font-semibold text-white'>{displayName}</Text>
-            <Text className='text-xs text-gray-400'>{userLocation}</Text>
+            {user && <Text className='text-base font-semibold text-black'>{user.firstName + ' ' + user.lastName}</Text>}
+            {isEditingLocation ? (
+              <View className='flex-row items-center'>
+                <TextInput
+                  value={userLocation}
+                  onChangeText={setUserLocation}
+                  className='pr-6 text-xs text-gray-700 border-b border-gray-400'
+                  autoFocus
+                  onBlur={() => setIsEditingLocation(false)}
+                  onSubmitEditing={() => setIsEditingLocation(false)}
+                />
+                <TouchableOpacity
+                  style={{ position: 'absolute', right: 0 }}
+                  onPress={() => setIsEditingLocation(false)}>
+                  <Ionicons name='checkmark' size={14} color='#4CAF50' />
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <TouchableOpacity onPress={() => setIsEditingLocation(true)}>
+                <View className='flex-row items-center'>
+                  <Text className='text-sm text-gray-600'>{userLocation}</Text>
+                  <Ionicons name='pencil-outline' size={12} color='#888' style={{ marginLeft: 4 }} />
+                </View>
+              </TouchableOpacity>
+            )}
           </View>
         </View>
         <TouchableOpacity>
