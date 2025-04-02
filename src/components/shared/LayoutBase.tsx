@@ -1,19 +1,23 @@
-import React, { ReactNode } from 'react'
-import { SafeAreaView, ViewProps } from 'react-native'
-import { StatusBar, StatusBarStyle } from 'expo-status-bar'
+import { SafeAreaView, ViewProps, View } from 'react-native'
+import { StatusBar } from 'expo-status-bar'
 import { cn } from '@/lib/utils'
+import { useTheme } from '@/contexts/ThemeContext'
+import { themeColors } from '@/constants/themeColors'
 
 interface Props extends ViewProps {
-  children: ReactNode
-  statusBarStyle?: StatusBarStyle
   withStatusBar?: boolean
 }
 
-export const LayoutBase: React.FC<Props> = ({ children, statusBarStyle = 'dark', withStatusBar, className }) => {
+export const LayoutBase: React.FC<Props> = ({ children, withStatusBar, className }) => {
+  const { isDark } = useTheme()
+  const theme = isDark ? themeColors.dark : themeColors.light
+
   return (
     <>
-      {withStatusBar && <StatusBar style={statusBarStyle} />}
-      <SafeAreaView className={cn('flex-1 px-4', withStatusBar && 'mt-10', className)}>{children}</SafeAreaView>
+      {withStatusBar && <StatusBar style={isDark ? 'light' : 'dark'} />}
+      <View className={cn('flex-1', withStatusBar && 'pt-9')} style={{ backgroundColor: theme.background }}>
+        <SafeAreaView className={cn('flex-1 px-4', className)}>{children}</SafeAreaView>
+      </View>
     </>
   )
 }

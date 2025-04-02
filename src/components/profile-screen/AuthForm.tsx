@@ -4,13 +4,16 @@ import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, Keyboard } 
 import { useState, useRef } from 'react'
 import { login, register } from '@/services/authService'
 import { LoginData, RegisterData } from '@/dto/auth'
-import { cn } from '@/lib/utils'
+import { useTheme } from '@/contexts/ThemeContext'
+import { themeColors } from '@/constants/themeColors'
 
 interface AuthFormProps {
   handleAuth: () => void
 }
 
 export const AuthForm: React.FC<AuthFormProps> = ({ handleAuth }) => {
+  const { isDark } = useTheme()
+  const theme = isDark ? themeColors.dark : themeColors.light
   const [isLogin, setIsLogin] = useState(true)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -128,93 +131,136 @@ export const AuthForm: React.FC<AuthFormProps> = ({ handleAuth }) => {
   }
 
   return (
-    <View className='items-center justify-center flex-1 p-6'>
-      <StatusBar style='auto' />
-      <Text className='mb-8 text-3xl font-bold'>{isLogin ? 'Login' : 'Register'}</Text>
-      {error && <Text className='mb-4 text-center text-red-500'>{error}</Text>}
-      {!isLogin && (
-        <>
-          <TextInput
-            ref={firstNameInputRef}
-            className='w-full px-4 py-2 mb-4 bg-gray-100 rounded-md'
-            placeholder='First Name'
-            value={firstName}
-            onChangeText={setFirstName}
-            autoCorrect={false}
-            autoComplete='given-name'
-            autoCapitalize='words'
-          />
-          <TextInput
-            ref={lastNameInputRef}
-            className='w-full px-4 py-2 mb-4 bg-gray-100 rounded-md'
-            placeholder='Last Name'
-            value={lastName}
-            onChangeText={setLastName}
-            autoCorrect={false}
-            autoComplete='family-name'
-            autoCapitalize='words'
-          />
-        </>
-      )}
-      <TextInput
-        ref={emailInputRef}
-        className={cn('mb-4 w-full rounded-md bg-gray-100 px-4 py-2', emailError && 'border border-red-500')}
-        placeholder='Email'
-        value={email}
-        onChangeText={(text) => {
-          setEmail(text)
-          if (emailError && !isFormEmpty()) {
-            validateEmail(text)
-          }
-        }}
-        onBlur={() => {
-          if (!isFormEmpty()) {
-            validateEmail(email)
-          }
-        }}
-        autoCapitalize='none'
-        autoCorrect={false}
-        autoComplete='email'
-        keyboardType='email-address'
-      />
-      {emailError && <Text className='self-start mb-2 text-sm text-red-500'>{emailError}</Text>}
-      <TextInput
-        ref={passwordInputRef}
-        className={cn('mb-4 w-full rounded-md bg-gray-100 px-4 py-2', passwordError && 'border border-red-500')}
-        placeholder='Password'
-        value={password}
-        onChangeText={(text) => {
-          setPassword(text)
-          if (passwordError && !isFormEmpty()) {
-            validatePassword(text)
-          }
-        }}
-        onBlur={() => {
-          if (!isFormEmpty()) {
-            validatePassword(password)
-          }
-        }}
-        autoCapitalize='none'
-        autoCorrect={false}
-        autoComplete='password'
-        secureTextEntry
-      />
-      {passwordError && <Text className='self-start mb-2 text-sm text-red-500'>{passwordError}</Text>}
-      <TouchableOpacity
-        className='items-center w-full py-3 mb-4 bg-blue-500 rounded-md'
-        onPress={handleSubmit}
-        disabled={loading}>
-        {loading ? (
-          <ActivityIndicator color='#ffffff' />
-        ) : (
-          <Text className='font-semibold text-white'>{isLogin ? 'Login' : 'Register'}</Text>
-        )}
-      </TouchableOpacity>
-      <TouchableOpacity onPress={toggleForm}>
-        <Text className='text-blue-500'>
-          {isLogin ? 'Need an account? Register' : 'Already have an account? Login'}
+    <View className='flex-1 p-6' style={{ backgroundColor: theme.background }}>
+      <StatusBar style={isDark ? 'light' : 'dark'} />
+      <View className='items-center justify-center flex-1'>
+        <Text className='mb-8 text-3xl font-bold' style={{ color: theme.text }}>
+          {isLogin ? 'Login' : 'Register'}
         </Text>
-      </TouchableOpacity>
+        {error && (
+          <Text className='mb-4 text-center' style={{ color: theme.error }}>
+            {error}
+          </Text>
+        )}
+        {!isLogin && (
+          <>
+            <TextInput
+              ref={firstNameInputRef}
+              className='w-full px-4 py-2 mb-4 rounded-md'
+              style={{
+                backgroundColor: isDark ? theme.cardBackground : theme.highlight,
+                color: theme.text,
+              }}
+              placeholder='First Name'
+              placeholderTextColor={theme.placeholder}
+              value={firstName}
+              onChangeText={setFirstName}
+              autoCorrect={false}
+              autoComplete='given-name'
+              autoCapitalize='words'
+            />
+            <TextInput
+              ref={lastNameInputRef}
+              className='w-full px-4 py-2 mb-4 rounded-md'
+              style={{
+                backgroundColor: isDark ? theme.cardBackground : theme.highlight,
+                color: theme.text,
+              }}
+              placeholder='Last Name'
+              placeholderTextColor={theme.placeholder}
+              value={lastName}
+              onChangeText={setLastName}
+              autoCorrect={false}
+              autoComplete='family-name'
+              autoCapitalize='words'
+            />
+          </>
+        )}
+        <TextInput
+          ref={emailInputRef}
+          className='w-full px-4 py-2 mb-4 rounded-md'
+          style={{
+            backgroundColor: isDark ? theme.cardBackground : theme.highlight,
+            color: theme.text,
+            borderWidth: emailError ? 1 : 0,
+            borderColor: emailError ? theme.error : 'transparent',
+          }}
+          placeholder='Email'
+          placeholderTextColor={theme.placeholder}
+          value={email}
+          onChangeText={(text) => {
+            setEmail(text)
+            if (emailError && !isFormEmpty()) {
+              validateEmail(text)
+            }
+          }}
+          onBlur={() => {
+            if (!isFormEmpty()) {
+              validateEmail(email)
+            }
+          }}
+          autoCapitalize='none'
+          autoCorrect={false}
+          autoComplete='email'
+          keyboardType='email-address'
+        />
+        {emailError && (
+          <Text className='self-start mb-2 text-sm' style={{ color: theme.error }}>
+            {emailError}
+          </Text>
+        )}
+        <TextInput
+          ref={passwordInputRef}
+          className='w-full px-4 py-2 mb-4 rounded-md'
+          style={{
+            backgroundColor: isDark ? theme.cardBackground : theme.highlight,
+            color: theme.text,
+            borderWidth: passwordError ? 1 : 0,
+            borderColor: passwordError ? theme.error : 'transparent',
+          }}
+          placeholder='Password'
+          placeholderTextColor={theme.placeholder}
+          value={password}
+          onChangeText={(text) => {
+            setPassword(text)
+            if (passwordError && !isFormEmpty()) {
+              validatePassword(text)
+            }
+          }}
+          onBlur={() => {
+            if (!isFormEmpty()) {
+              validatePassword(password)
+            }
+          }}
+          autoCapitalize='none'
+          autoCorrect={false}
+          autoComplete='password'
+          secureTextEntry
+        />
+        {passwordError && (
+          <Text className='self-start mb-2 text-sm' style={{ color: theme.error }}>
+            {passwordError}
+          </Text>
+        )}
+        <TouchableOpacity
+          className='items-center w-full py-3 mb-4 rounded-md'
+          style={{ backgroundColor: theme.primary }}
+          onPress={handleSubmit}
+          disabled={loading}>
+          {loading ? (
+            <ActivityIndicator color={theme.text} />
+          ) : (
+            <Text className='font-semibold' style={{ color: theme.text }}>
+              {isLogin ? 'Login' : 'Register'}
+            </Text>
+          )}
+        </TouchableOpacity>
+        <TouchableOpacity onPress={toggleForm}>
+          <Text style={{ color: theme.primary }}>
+            {isLogin ? 'Need an account? Register' : 'Already have an account? Login'}
+          </Text>
+        </TouchableOpacity>
+      </View>
     </View>
   )
 }

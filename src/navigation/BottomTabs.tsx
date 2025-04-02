@@ -5,15 +5,24 @@ import Feather from '@expo/vector-icons/Feather'
 import AntDesign from '@expo/vector-icons/AntDesign'
 import MaterialIcons from '@expo/vector-icons/MaterialIcons'
 import { ExploreScreen } from '@/screens/ExploreScreen'
+import { useTheme } from '@/contexts/ThemeContext'
+import { themeColors } from '@/constants/themeColors'
 
 const Tab = createBottomTabNavigator()
 
 export const BottomTabs: React.FC = () => {
+  const { isDark } = useTheme()
+  const theme = isDark ? themeColors.dark : themeColors.light
+
   return (
     <Tab.Navigator
       screenOptions={{
-        tabBarActiveTintColor: '#0080ff',
-        tabBarInactiveTintColor: '#999090',
+        tabBarActiveTintColor: theme.primary,
+        tabBarInactiveTintColor: theme.textTertiary,
+        tabBarStyle: {
+          backgroundColor: theme.cardBackground,
+          borderTopColor: theme.border,
+        },
         headerShown: false,
       }}>
       <Tab.Screen
