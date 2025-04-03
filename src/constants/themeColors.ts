@@ -35,7 +35,7 @@ export const themeColors: ThemeColors = {
     warning: '#F59E0B',
     icon: '#6B7280',
     highlight: '#E5E7EB',
-    placeholder: '#9CA3AF',
+    placeholder: '#868D98',
     overlay: 'rgba(255, 255, 255, 0.8)',
     tealAccent: '#14B8A6',
   },

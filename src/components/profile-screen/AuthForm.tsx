@@ -8,11 +8,11 @@ import { useTheme } from '@/contexts/ThemeContext'
 import { themeColors } from '@/constants/themeColors'
 import { Loading } from '@/components/shared/Loading'
 
-interface AuthFormProps {
+interface Props {
   handleAuth: () => void
 }
 
-export const AuthForm: React.FC<AuthFormProps> = ({ handleAuth }) => {
+export const AuthForm: React.FC<Props> = ({ handleAuth }) => {
   const { isDark } = useTheme()
   const theme = isDark ? themeColors.dark : themeColors.light
   const [isLogin, setIsLogin] = useState(true)
