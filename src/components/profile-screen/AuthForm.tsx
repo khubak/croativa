@@ -1,11 +1,12 @@
 import axios from 'axios'
 import { StatusBar } from 'expo-status-bar'
-import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, Keyboard } from 'react-native'
+import { View, Text, TextInput, TouchableOpacity, Keyboard } from 'react-native'
 import { useState, useRef } from 'react'
 import { login, register } from '@/services/authService'
 import { LoginData, RegisterData } from '@/dto/auth'
 import { useTheme } from '@/contexts/ThemeContext'
 import { themeColors } from '@/constants/themeColors'
+import { Loading } from '@/components/shared/Loading'
 
 interface AuthFormProps {
   handleAuth: () => void
@@ -248,7 +249,7 @@ export const AuthForm: React.FC<AuthFormProps> = ({ handleAuth }) => {
           onPress={handleSubmit}
           disabled={loading}>
           {loading ? (
-            <ActivityIndicator color={theme.text} />
+            <Loading size='small' fullScreen={false} color={theme.text} />
           ) : (
             <Text className='font-semibold' style={{ color: theme.text }}>
               {isLogin ? 'Login' : 'Register'}

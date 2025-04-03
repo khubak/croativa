@@ -1,15 +1,5 @@
 import { useEffect, useState, useCallback, useRef } from 'react'
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  ActivityIndicator,
-  FlatList,
-  RefreshControl,
-  Image,
-  ImageURISource,
-  TextInput,
-} from 'react-native'
+import { View, Text, TouchableOpacity, FlatList, RefreshControl, Image, ImageURISource, TextInput } from 'react-native'
 import { useFocusEffect } from '@react-navigation/native'
 import { Restaurant } from '@/dto/restaurant'
 import { fetchRestaurants } from '@/services/restaurantService'
@@ -17,14 +7,14 @@ import { RestaurantCard } from '@/components/explore-screen/RestaurantCard'
 import { SearchBar } from '@/components/explore-screen/SearchBar'
 import { Ionicons } from '@expo/vector-icons'
 import { LayoutBase } from '@/components/shared/LayoutBase'
+import { Loading } from '@/components/shared/Loading'
 import { PHOTOS } from '@/constants/profilePhotos'
 import { useAuth } from '@/hooks/useAuth'
 import { useTheme } from '@/contexts/ThemeContext'
 import { themeColors } from '@/constants/themeColors'
-import { StatusBar } from 'expo-status-bar'
 
 export const ExploreScreen: React.FC = () => {
-  const { user, authLoading, authChecked, handleAuth } = useAuth()
+  const { me } = useAuth()
   const { isDark } = useTheme()
   const theme = isDark ? themeColors.dark : themeColors.light
   const [isLoading, setIsLoading] = useState(true)
@@ -40,14 +30,14 @@ export const ExploreScreen: React.FC = () => {
   const isDataOperation = useRef(false)
 
   useEffect(() => {
-    handleAuth()
-  }, [handleAuth])
+    me.handleAuth()
+  }, [me.handleAuth])
 
   useEffect(() => {
-    if (authChecked && !authLoading) {
+    if (me.authChecked && !me.authLoading) {
       loadInitialData()
     }
-  }, [authChecked, authLoading])
+  }, [me.authChecked, me.authLoading])
 
   const loadInitialData = async () => {
     await loadRestaurants(1, searchQuery, true)
@@ -105,7 +95,7 @@ export const ExploreScreen: React.FC = () => {
     if (isDataOperation.current) return
 
     setRefreshing(true)
-    handleAuth()
+    me.handleAuth()
     loadRestaurants(1, searchQuery, true)
   }
 
@@ -116,14 +106,8 @@ export const ExploreScreen: React.FC = () => {
     }
   }
 
-  if (isLoading || authLoading) {
-    return (
-      <LayoutBase withStatusBar>
-        <View className='items-center justify-center flex-1'>
-          <ActivityIndicator size='large' color={theme.textTertiary} />
-        </View>
-      </LayoutBase>
-    )
+  if (isLoading || me.authLoading) {
+    return <Loading color={theme.textTertiary} />
   }
 
   return (
@@ -140,9 +124,9 @@ export const ExploreScreen: React.FC = () => {
             />
           </View>
           <View>
-            {user && (
+            {me.user && (
               <Text className='text-base font-semibold' style={{ color: theme.text }}>
-                {user.firstName + ' ' + user.lastName}
+                {me.user.firstName + ' ' + me.user.lastName}
               </Text>
             )}
             {isEditingLocation ? (
@@ -189,6 +173,7 @@ export const ExploreScreen: React.FC = () => {
         keyExtractor={(item) => item.id}
         onEndReached={handleEndReached}
         onEndReachedThreshold={0.3}
+        contentContainerStyle={{ paddingBottom: 20 }}
         ItemSeparatorComponent={() => <View className='h-3' style={{ backgroundColor: 'transparent' }} />}
         refreshControl={
           <RefreshControl
@@ -206,11 +191,7 @@ export const ExploreScreen: React.FC = () => {
           </View>
         )}
         ListFooterComponent={() =>
-          isLoadingMore ? (
-            <View className='py-5'>
-              <ActivityIndicator size='small' color={theme.textTertiary} />
-            </View>
-          ) : null
+          isLoadingMore ? <Loading size='small' fullScreen={false} color={theme.textTertiary} /> : null
         }
       />
     </LayoutBase>

@@ -8,46 +8,41 @@ import { useTheme } from '@/contexts/ThemeContext'
 import { themeColors } from '@/constants/themeColors'
 import { Ionicons } from '@expo/vector-icons'
 import { LayoutBase } from '@/components/shared/LayoutBase'
+import { Loading } from '@/components/shared/Loading'
 
 export const ProfileScreen: React.FC = () => {
-  const { user, authLoading, handleAuth, setUser } = useAuth()
+  const { me } = useAuth()
   const { isDark, toggleTheme } = useTheme()
   const theme = isDark ? themeColors.dark : themeColors.light
   const [loggingOut, setLoggingOut] = useState(false)
 
   useEffect(() => {
-    handleAuth()
-  }, [handleAuth])
+    me.handleAuth()
+  }, [me.handleAuth])
 
   const handleLogout = async () => {
     setLoggingOut(true)
     await logout()
-    setUser(null)
+    me.setUser(null)
     setLoggingOut(false)
   }
 
-  if (authLoading) {
-    return (
-      <LayoutBase withStatusBar>
-        <View className='items-center justify-center flex-1'>
-          <ActivityIndicator size='large' color={theme.primary} />
-        </View>
-      </LayoutBase>
-    )
+  if (me.authLoading) {
+    return <Loading />
   }
 
-  if (!user) {
-    return <AuthForm handleAuth={handleAuth} />
+  if (!me.user) {
+    return <AuthForm handleAuth={me.handleAuth} />
   }
 
   return (
-    <LayoutBase withStatusBar className='justify-center flex-1'>
+    <LayoutBase withStatusBar className='justify-center'>
       <View className='items-center'>
         <Text className='mb-2 text-2xl font-semibold' style={{ color: theme.text }}>
           Profile
         </Text>
         <Text className='mb-6 text-xl' style={{ color: theme.textSecondary }}>
-          Hello, {user.email}
+          Hello, {me.user.email}
         </Text>
       </View>
       <View

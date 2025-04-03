@@ -28,10 +28,12 @@ export const useAuth = () => {
   }, [])
 
   return {
-    user,
-    authLoading,
-    authChecked,
-    handleAuth,
-    setUser,
+    me: {
+      user,
+      authLoading,
+      authChecked,
+      handleAuth,
+      setUser,
+    },
   }
 }
